@@ -10,7 +10,7 @@ func main() {
 	r := gin.Default()
 
 	// Serve HTML template with the grid data
-	r.LoadHTMLFiles("templates/index.html")
+	r.LoadHTMLFiles("index.html")
 	r.GET("/", func(c *gin.Context) {
 		// Generate the grid data (e.g., 1000 cells)
 		var gridData []struct{}
