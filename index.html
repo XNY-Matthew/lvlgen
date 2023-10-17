@@ -62,31 +62,107 @@
 
     <script>
         // JavaScript to handle painting and exporting
-        const grid = document.getElementById("grid");
-        const cellTypeSelect = document.getElementById("cellType");
-        const exportButton = document.getElementById("exportButton");
-        let drawing = false;
-        let selectedCells = [];
+const grid = document.getElementById("grid");
+const cellTypeSelect = document.getElementById("cellType");
+const exportButton = document.getElementById("exportButton");
+let drawing = false;
+let selectedCells = [];
 
-        // Function to generate the grid of cells
-        function generateGrid() {
-            const numRows = 10; // Adjust the number of rows as needed
-            const numCols = 10; // Adjust the number of columns as needed
+// Function to generate the grid of cells
+function generateGrid() {
+    const numRows = 10; // Adjust the number of rows as needed
+    const numCols = 10; // Adjust the number of columns as needed
 
-            for (let row = 0; row < numRows; row++) {
-                for (let col = 0; col < numCols; col++) {
-                    const cell = document.createElement("div");
-                    cell.className = "cell";
-                    grid.appendChild(cell);
+    for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < numCols; col++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            grid.appendChild(cell);
+
+            // Event listeners for drawing
+            cell.addEventListener("mousedown", () => {
+                drawing = true;
+                if (drawing) {
+                    selectedCells.push(cell);
+                    updateCellColor(cell);
                 }
-            }
+            });
+
+            cell.addEventListener("mouseup", () => {
+                drawing = false;
+            });
+
+            cell.addEventListener("mouseover", () => {
+                if (drawing) {
+                    selectedCells.push(cell);
+                    updateCellColor(cell);
+                }
+            });
         }
+    }
+}
 
-        // Call the function to generate the grid when the page loads
-        window.addEventListener("load", generateGrid);
+// Call the function to generate the grid when the page loads
+window.addEventListener("load", generateGrid);
 
-        // ... rest of your JavaScript code (painting and exporting) ...
+// Function to update cell color based on the selected cell type
+function updateCellColor(cell) {
+    const selectedCellType = cellTypeSelect.value;
+    if (selectedCellType === "tnt" || selectedCellType === "spike") {
+        cell.className = `cell ${selectedCellType}`;
+    } else {
+        cell.style.backgroundColor = selectedCellType;
+    }
+}
 
+// Function to export the drawn region as a PNG image
+exportButton.addEventListener("click", () => {
+    if (selectedCells.length === 0) {
+        alert("No region drawn. Please draw a region first.");
+        return;
+    }
+
+    // Calculate the bounding box of the drawn cells
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    selectedCells.forEach((cell) => {
+        const rect = cell.getBoundingClientRect();
+        minX = Math.min(minX, rect.left);
+        minY = Math.min(minY, rect.top);
+        maxX = Math.max(maxX, rect.right);
+        maxY = Math.max(maxY, rect.bottom);
+    });
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // Create a canvas and copy the selected region
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    selectedCells.forEach((cell) => {
+        const rect = cell.getBoundingClientRect();
+        const x = rect.left - minX;
+        const y = rect.top - minY;
+        ctx.fillStyle = cell.style.backgroundColor;
+        ctx.fillRect(x, y, cell.offsetWidth, cell.offsetHeight);
+    });
+
+    // Convert the canvas to a PNG image and open it in a new tab
+    canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "drawn_region.png";
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+});
     </script>
 </body>
 </html>
