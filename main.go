@@ -12,7 +12,7 @@ func main() {
 
 	// Serve your HTML templates and handle routes
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "templates/index.html")
+		http.ServeFile(w, r, "static/index.html")
 	})
 
 	// Start the server on port 8080
