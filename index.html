@@ -70,7 +70,6 @@
             <h2>Paint Options</h2>
             <label for="cellType">Choose Cell Type:</label>
             <select id="cellType">
-                <option value="default">Default</option>
                 <option value="tnt">TNT</option>
                 <option value="spike">Spike</option>
                 <option value="unbreakable">Unbreakable</option>
@@ -78,6 +77,7 @@
                 <!-- Add more options as needed -->
             </select>
             <br>
+            <p>Shift – remove</p> <!-- Display the Shift - remove text -->
             <button id="exportButton">Export as PNG</button>
         </div>
         <div class="grid-container" id="gridContainer">
@@ -111,8 +111,13 @@
                     cell.addEventListener("mousedown", () => {
                         drawing = true;
                         if (drawing) {
-                            selectedCells.push(cell);
-                            updateCellColor(cell);
+                            if (event.shiftKey) {
+                                // Remove the cell if Shift key is held
+                                cell.className = "cell default";
+                            } else {
+                                selectedCells.push(cell);
+                                updateCellColor(cell);
+                            }
                         }
                     });
 
@@ -122,8 +127,13 @@
 
                     cell.addEventListener("mouseover", () => {
                         if (drawing) {
-                            selectedCells.push(cell);
-                            updateCellColor(cell);
+                            if (event.shiftKey) {
+                                // Remove the cell if Shift key is held
+                                cell.className = "cell default";
+                            } else {
+                                selectedCells.push(cell);
+                                updateCellColor(cell);
+                            }
                         }
                     });
                 }
