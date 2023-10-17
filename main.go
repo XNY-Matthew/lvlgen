@@ -1,28 +1,21 @@
 package main
 
 import (
+	"log"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := gin.Default()
+	// Serve static files from the "static" directory
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// Serve HTML template with the grid data
-	r.LoadHTMLFiles("index.html")
-	r.GET("/", func(c *gin.Context) {
-		// Generate the grid data (e.g., 1000 cells)
-		var gridData []struct{}
-		for i := 0; i < 1000; i++ {
-			gridData = append(gridData, struct{}{})
-		}
-
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"GridData": gridData,
-		})
+	// Serve your HTML templates and handle routes
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "templates/index.html")
 	})
 
-	// Run the server on port 8080
-	r.Run(":8080")
+	// Start the server on port 8080
+	log.Println("Server is running on :8080...")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
