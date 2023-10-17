@@ -1,22 +1,16 @@
-body {
-    background-color: #222;
-  }
-  
-  .grid {
+/* Add CSS styles to style.css as needed */
+.grid-container {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-gap: 1px;
-    margin: 20px auto;
-    max-width: 500px;
-    background-color: #333;
-    padding: 10px;
-  }
-  
-  .cell {
-    background-image: url("images/cell.png");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    cursor: pointer;
-  }
-  
+    grid-template-columns: repeat(10, 50px); /* 10 columns, adjust size as needed */
+    grid-template-rows: repeat(5, 50px); /* 5 rows, adjust size as needed */
+    gap: 1px; /* Gap between cells */
+    background-color: black; /* Black background for the grid */
+    margin: 0 auto; /* Center the grid */
+}
+
+.cell {
+    width: 50px; /* Adjust size as needed */
+    height: 50px; /* Adjust size as needed */
+    background-color: white; /* White background for cells */
+    border: 1px solid black; /* 1px black border for cells */
+}

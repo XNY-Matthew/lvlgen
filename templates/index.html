@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Infinite Grid</title>
+    <style>
+        body {
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+
+        .grid {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Paint Options</h2>
+            <label for="cellType">Choose Cell Type:</label>
+            <select id="cellType">
+                <option value="white">Default</option>
+                <option value="tnt">TNT</option>
+                <option value="spike">Spike</option>
+                <!-- Add more options as needed -->
+            </select>
+            <br>
+            <button id="exportButton">Export as PNG</button>
+        </div>
+        <div class="grid" id="grid">
+            {{range .GridData}}
+                <div class="cell"></div>
+            {{end}}
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle painting and exporting
+        const grid = document.getElementById("grid");
+        const cellTypeSelect = document.getElementById("cellType");
+        const exportButton = document.getElementById("exportButton");
+        let drawing = false;
+        let selectedCells = [];
+
+        grid.addEventListener("mousedown", (e) => {
+            drawing = true;
+            if (drawing) {
+                selectedCells.push(e.target);
+                updateCellColor(e);
+            }
+        });
+
+        grid.addEventListener("mouseup", () => {
+            drawing = false;
+        });
+
+        grid.addEventListener("mouseover", (e) => {
+            if (drawing) {
+                selectedCells.push(e.target);
+                updateCellColor(e);
+            }
+        });
+
+        // Function to update cell color based on the selected cell type
+        function updateCellColor(event) {
+            const selectedCellType = cellTypeSelect.value;
+            event.target.style.backgroundColor = selectedCellType;
+        }
+
+       // Function to export the drawn region as a PNG image
+exportButton.addEventListener("click", () => {
+    if (selectedCells.length === 0) {
+        alert("No region drawn. Please draw a region first.");
+        return;
+    }
+
+    // Calculate the bounding box of the drawn cells
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    selectedCells.forEach((cell) => {
+        const rect = cell.getBoundingClientRect();
+        minX = Math.min(minX, rect.left);
+        minY = Math.min(minY, rect.top);
+        maxX = Math.max(maxX, rect.right);
+        maxY = Math.max(maxY, rect.bottom);
+    });
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // Create a canvas and copy the selected region
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    selectedCells.forEach((cell) => {
+        const rect = cell.getBoundingClientRect();
+        const x = rect.left - minX;
+        const y = rect.top - minY;
+        ctx.fillStyle = cell.style.backgroundColor;
+        ctx.fillRect(x, y, cell.offsetWidth, cell.offsetHeight);
+    });
+
+    // Convert the canvas to a PNG image and open it in a new tab
+    canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "drawn_region.png";
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+});
+
+    </script>
+</body>
+</html>
