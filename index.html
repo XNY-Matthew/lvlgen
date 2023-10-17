@@ -19,25 +19,43 @@
             padding: 10px;
         }
 
-        .grid {
+        .grid-container {
             flex-grow: 1;
-            position: relative;
+            display: flex;
+            flex-direction: column-reverse; /* Start painting from the bottom */
+            overflow-y: scroll; /* Enable vertical scrolling */
+            width: 250px; /* Fixed width of 5 cells (5 * 50px) */
+            border: 1px solid #ccc;
+        }
+
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
         }
 
         .cell {
             width: 50px;
             height: 50px;
             border: 1px solid #ccc; /* Change border color to grey */
-            float: left;
+            background-repeat: no-repeat;
+            background-size: cover;
         }
 
-        /* Define styles for TNT and Spike cells */
+        /* Define styles for different cell types */
         .cell.tnt {
-            background-color: red;
+            background-image: url('images/TNT-Blocks.png');
         }
 
         .cell.spike {
-            background-color: blue;
+            background-image: url('images/Spike_Block.PNG');
+        }
+
+        .cell.unbreakable {
+            background-image: url('images/Unbreakable-Blocks.png');
+        }
+
+        .cell.default {
+            background-image: url('images/cell.png');
         }
     </style>
 </head>
@@ -47,122 +65,132 @@
             <h2>Paint Options</h2>
             <label for="cellType">Choose Cell Type:</label>
             <select id="cellType">
-                <option value="white">Default</option>
+                <option value="default">Default</option>
                 <option value="tnt">TNT</option>
                 <option value="spike">Spike</option>
+                <option value="unbreakable">Unbreakable</option>
                 <!-- Add more options as needed -->
             </select>
             <br>
             <button id="exportButton">Export as PNG</button>
         </div>
-        <div class="grid" id="grid">
+        <div class="grid-container" id="gridContainer">
             <!-- The grid will be generated dynamically here using JavaScript -->
         </div>
     </div>
 
     <script>
         // JavaScript to handle painting and exporting
-const grid = document.getElementById("grid");
-const cellTypeSelect = document.getElementById("cellType");
-const exportButton = document.getElementById("exportButton");
-let drawing = false;
-let selectedCells = [];
+        const gridContainer = document.getElementById("gridContainer");
+        const cellTypeSelect = document.getElementById("cellType");
+        const exportButton = document.getElementById("exportButton");
+        let drawing = false;
+        let selectedCells = [];
 
-// Function to generate the grid of cells
-function generateGrid() {
-    const numRows = 10; // Adjust the number of rows as needed
-    const numCols = 10; // Adjust the number of columns as needed
+        // Function to generate the grid of cells
+        function generateGrid() {
+            const numRows = 10; // Adjust the number of rows as needed
+            const numCols = 5; // Fixed number of columns
 
-    for (let row = 0; row < numRows; row++) {
-        for (let col = 0; col < numCols; col++) {
-            const cell = document.createElement("div");
-            cell.className = "cell";
-            grid.appendChild(cell);
+            for (let row = 0; row < numRows; row++) {
+                const rowDiv = document.createElement("div");
+                rowDiv.className = "grid";
 
-            // Event listeners for drawing
-            cell.addEventListener("mousedown", () => {
-                drawing = true;
-                if (drawing) {
-                    selectedCells.push(cell);
-                    updateCellColor(cell);
+                for (let col = 0; col < numCols; col++) {
+                    const cell = document.createElement("div");
+                    cell.className = "cell default"; // Default cell type
+                    rowDiv.appendChild(cell);
+
+                    // Event listeners for drawing
+                    cell.addEventListener("mousedown", () => {
+                        drawing = true;
+                        if (drawing) {
+                            selectedCells.push(cell);
+                            updateCellColor(cell);
+                        }
+                    });
+
+                    cell.addEventListener("mouseup", () => {
+                        drawing = false;
+                    });
+
+                    cell.addEventListener("mouseover", () => {
+                        if (drawing) {
+                            selectedCells.push(cell);
+                            updateCellColor(cell);
+                        }
+                    });
                 }
-            });
 
-            cell.addEventListener("mouseup", () => {
-                drawing = false;
-            });
-
-            cell.addEventListener("mouseover", () => {
-                if (drawing) {
-                    selectedCells.push(cell);
-                    updateCellColor(cell);
-                }
-            });
+                gridContainer.appendChild(rowDiv);
+            }
         }
-    }
-}
 
-// Call the function to generate the grid when the page loads
-window.addEventListener("load", generateGrid);
+        // Call the function to generate the grid when the page loads
+        window.addEventListener("load", generateGrid);
 
-// Function to update cell color based on the selected cell type
-function updateCellColor(cell) {
-    const selectedCellType = cellTypeSelect.value;
-    if (selectedCellType === "tnt" || selectedCellType === "spike") {
-        cell.className = `cell ${selectedCellType}`;
-    } else {
-        cell.style.backgroundColor = selectedCellType;
-    }
-}
+        // Function to update cell color based on the selected cell type
+        function updateCellColor(cell) {
+            const selectedCellType = cellTypeSelect.value;
+            cell.className = `cell ${selectedCellType}`;
+        }
 
-// Function to export the drawn region as a PNG image
-exportButton.addEventListener("click", () => {
-    if (selectedCells.length === 0) {
-        alert("No region drawn. Please draw a region first.");
-        return;
-    }
+        // Function to export the drawn region as a PNG image
+        exportButton.addEventListener("click", () => {
+            if (selectedCells.length === 0) {
+                alert("No region drawn. Please draw a region first.");
+                return;
+            }
 
-    // Calculate the bounding box of the drawn cells
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
+            // Create a temporary canvas to copy the selected region
+            const tempCanvas = document.createElement("canvas");
+            const tempCtx = tempCanvas.getContext("2d");
 
-    selectedCells.forEach((cell) => {
-        const rect = cell.getBoundingClientRect();
-        minX = Math.min(minX, rect.left);
-        minY = Math.min(minY, rect.top);
-        maxX = Math.max(maxX, rect.right);
-        maxY = Math.max(maxY, rect.bottom);
-    });
+            // Calculate the bounding box of the drawn cells
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
 
-    const width = maxX - minX;
-    const height = maxY - minY;
+            selectedCells.forEach((cell) => {
+                const rect = cell.getBoundingClientRect();
+                minX = Math.min(minX, rect.left);
+                minY = Math.min(minY, rect.top);
+                maxX = Math.max(maxX, rect.right);
+                maxY = Math.max(maxY, rect.bottom);
+            });
 
-    // Create a canvas and copy the selected region
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
+            const width = maxX - minX;
+            const height = maxY - minY;
 
-    selectedCells.forEach((cell) => {
-        const rect = cell.getBoundingClientRect();
-        const x = rect.left - minX;
-        const y = rect.top - minY;
-        ctx.fillStyle = cell.style.backgroundColor;
-        ctx.fillRect(x, y, cell.offsetWidth, cell.offsetHeight);
-    });
+            // Set the dimensions of the temporary canvas
+            tempCanvas.width = width;
+            tempCanvas.height = height;
 
-    // Convert the canvas to a PNG image and open it in a new tab
-    canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "drawn_region.png";
-        a.click();
-        URL.revokeObjectURL(url);
-    });
-});
+            selectedCells.forEach((cell) => {
+                const rect = cell.getBoundingClientRect();
+                const x = rect.left - minX;
+                const y = rect.top - minY;
+
+                // Get the background image of the cell
+                const backgroundImage = getComputedStyle(cell).backgroundImage;
+
+                // Draw the background image on the canvas
+                const img = new Image();
+                img.src = backgroundImage.slice(4, -1).replace(/"/g, "");
+                tempCtx.drawImage(img, x, y, cell.offsetWidth, cell.offsetHeight);
+            });
+
+            // Convert the temporary canvas to a PNG image and open it in a new tab
+            tempCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "drawn_region.png";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        });
     </script>
 </body>
 </html>
