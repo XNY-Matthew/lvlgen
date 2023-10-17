@@ -54,8 +54,13 @@
             background-image: url('images/Unbreakable-Blocks.png');
         }
 
+        .cell.enemy {
+            background-image: url('images/cell.png'); /* Use cell.png graphics for Enemy */
+        }
+
+        /* Make default cells empty */
         .cell.default {
-            background-image: url('images/cell.png');
+            background-image: none;
         }
     </style>
 </head>
@@ -69,6 +74,7 @@
                 <option value="tnt">TNT</option>
                 <option value="spike">Spike</option>
                 <option value="unbreakable">Unbreakable</option>
+                <option value="enemy">Enemy</option> <!-- Add the Enemy option -->
                 <!-- Add more options as needed -->
             </select>
             <br>
