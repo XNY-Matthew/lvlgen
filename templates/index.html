@@ -27,8 +27,17 @@
         .cell {
             width: 50px;
             height: 50px;
-            border: 1px solid #000;
+            border: 1px solid #ccc; /* Change border color to grey */
             float: left;
+        }
+
+        /* Define styles for TNT and Spike cells */
+        .cell.tnt {
+            background-color: red;
+        }
+
+        .cell.spike {
+            background-color: blue;
         }
     </style>
 </head>
@@ -83,58 +92,61 @@
         // Function to update cell color based on the selected cell type
         function updateCellColor(event) {
             const selectedCellType = cellTypeSelect.value;
-            event.target.style.backgroundColor = selectedCellType;
+            if (selectedCellType === "tnt" || selectedCellType === "spike") {
+                event.target.className = `cell ${selectedCellType}`;
+            } else {
+                event.target.style.backgroundColor = selectedCellType;
+            }
         }
 
-       // Function to export the drawn region as a PNG image
-exportButton.addEventListener("click", () => {
-    if (selectedCells.length === 0) {
-        alert("No region drawn. Please draw a region first.");
-        return;
-    }
+        // Function to export the drawn region as a PNG image
+        exportButton.addEventListener("click", () => {
+            if (selectedCells.length === 0) {
+                alert("No region drawn. Please draw a region first.");
+                return;
+            }
 
-    // Calculate the bounding box of the drawn cells
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
+            // Calculate the bounding box of the drawn cells
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
 
-    selectedCells.forEach((cell) => {
-        const rect = cell.getBoundingClientRect();
-        minX = Math.min(minX, rect.left);
-        minY = Math.min(minY, rect.top);
-        maxX = Math.max(maxX, rect.right);
-        maxY = Math.max(maxY, rect.bottom);
-    });
+            selectedCells.forEach((cell) => {
+                const rect = cell.getBoundingClientRect();
+                minX = Math.min(minX, rect.left);
+                minY = Math.min(minY, rect.top);
+                maxX = Math.max(maxX, rect.right);
+                maxY = Math.max(maxY, rect.bottom);
+            });
 
-    const width = maxX - minX;
-    const height = maxY - minY;
+            const width = maxX - minX;
+            const height = maxY - minY;
 
-    // Create a canvas and copy the selected region
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
+            // Create a canvas and copy the selected region
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
 
-    selectedCells.forEach((cell) => {
-        const rect = cell.getBoundingClientRect();
-        const x = rect.left - minX;
-        const y = rect.top - minY;
-        ctx.fillStyle = cell.style.backgroundColor;
-        ctx.fillRect(x, y, cell.offsetWidth, cell.offsetHeight);
-    });
+            selectedCells.forEach((cell) => {
+                const rect = cell.getBoundingClientRect();
+                const x = rect.left - minX;
+                const y = rect.top - minY;
+                ctx.fillStyle = cell.style.backgroundColor;
+                ctx.fillRect(x, y, cell.offsetWidth, cell.offsetHeight);
+            });
 
-    // Convert the canvas to a PNG image and open it in a new tab
-    canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "drawn_region.png";
-        a.click();
-        URL.revokeObjectURL(url);
-    });
-});
-
+            // Convert the canvas to a PNG image and open it in a new tab
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "drawn_region.png";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        });
     </script>
 </body>
 </html>
