@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Infinite Grid</title>
+    <style>
+        body {
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+
+        .grid-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column-reverse; /* Start painting from the bottom */
+            overflow-y: scroll; /* Enable vertical scrolling */
+            width: 250px; /* Fixed width of 5 cells (5 * 50px) */
+            border: 1px solid #ccc;
+        }
+
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc; /* Change border color to grey */
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        /* Define styles for different cell types */
+        .cell.tnt {
+            background-image: url('images/TNT-Blocks.png');
+        }
+
+        .cell.spike {
+            background-image: url('images/Spike_Block.png');
+        }
+
+        .cell.unbreakable {
+            background-image: url('images/Unbreakable-Blocks.png');
+        }
+
+        .cell.enemy {
+            background-image: url('images/cell.png'); /* Use cell.png graphics for Enemy */
+        }
+
+        /* Make default cells empty */
+        .cell.default {
+            background-image: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Paint Options</h2>
+            <label for="cellType">Choose Cell Type:</label>
+            <select id="cellType">
+                <option value="tnt">TNT</option>
+                <option value="spike">Spike</option>
+                <option value="unbreakable">Unbreakable</option>
+                <option value="enemy">Enemy</option> <!-- Add the Enemy option -->
+                <!-- Add more options as needed -->
+            </select>
+            <br>
+            <p>Shift – remove</p> <!-- Display the Shift - remove text -->
+            <button id="exportButton">Export as PNG</button>
+        </div>
+        <div class="grid-container" id="gridContainer">
+            <!-- The grid will be generated dynamically here using JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle painting and exporting
+        const gridContainer = document.getElementById("gridContainer");
+        const cellTypeSelect = document.getElementById("cellType");
+        const exportButton = document.getElementById("exportButton");
+        let drawing = false;
+        let selectedCells = [];
+
+        // Function to generate the grid of cells
+        function generateGrid() {
+            const numRows = 10; // Adjust the number of rows as needed
+            const numCols = 5; // Fixed number of columns
+
+            for (let row = 0; row < numRows; row++) {
+                const rowDiv = document.createElement("div");
+                rowDiv.className = "grid";
+
+                for (let col = 0; col < numCols; col++) {
+                    const cell = document.createElement("div");
+                    cell.className = "cell default"; // Default cell type
+                    rowDiv.appendChild(cell);
+
+                    // Event listeners for drawing
+                    cell.addEventListener("mousedown", () => {
+                        drawing = true;
+                        if (drawing) {
+                            if (event.shiftKey) {
+                                // Remove the cell if Shift key is held
+                                cell.className = "cell default";
+                            } else {
+                                selectedCells.push(cell);
+                                updateCellColor(cell);
+                            }
+                        }
+                    });
+
+                    cell.addEventListener("mouseup", () => {
+                        drawing = false;
+                    });
+
+                    cell.addEventListener("mouseover", () => {
+                        if (drawing) {
+                            if (event.shiftKey) {
+                                // Remove the cell if Shift key is held
+                                cell.className = "cell default";
+                            } else {
+                                selectedCells.push(cell);
+                                updateCellColor(cell);
+                            }
+                        }
+                    });
+                }
+
+                gridContainer.appendChild(rowDiv);
+            }
+        }
+
+        // Call the function to generate the grid when the page loads
+        window.addEventListener("load", generateGrid);
+
+        // Function to update cell color based on the selected cell type
+        function updateCellColor(cell) {
+            const selectedCellType = cellTypeSelect.value;
+            cell.className = `cell ${selectedCellType}`;
+        }
+
+        // Function to export the drawn region as a PNG image
+        exportButton.addEventListener("click", () => {
+            if (selectedCells.length === 0) {
+                alert("No region drawn. Please draw a region first.");
+                return;
+            }
+
+            // Create a temporary canvas to copy the selected region
+            const tempCanvas = document.createElement("canvas");
+            const tempCtx = tempCanvas.getContext("2d");
+
+            // Calculate the bounding box of the drawn cells
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+
+            selectedCells.forEach((cell) => {
+                const rect = cell.getBoundingClientRect();
+                minX = Math.min(minX, rect.left);
+                minY = Math.min(minY, rect.top);
+                maxX = Math.max(maxX, rect.right);
+                maxY = Math.max(maxY, rect.bottom);
+            });
+
+            const width = maxX - minX;
+            const height = maxY - minY;
+
+            // Set the dimensions of the temporary canvas
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+
+            selectedCells.forEach((cell) => {
+                const rect = cell.getBoundingClientRect();
+                const x = rect.left - minX;
+                const y = rect.top - minY;
+
+                // Get the background image of the cell
+                const backgroundImage = getComputedStyle(cell).backgroundImage;
+
+                // Draw the background image on the canvas
+                const img = new Image();
+                img.src = backgroundImage.slice(4, -1).replace(/"/g, "");
+                tempCtx.drawImage(img, x, y, cell.offsetWidth, cell.offsetHeight);
+            });
+
+            // Convert the temporary canvas to a PNG image and open it in a new tab
+            tempCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "drawn_region.png";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        });
+    </script>
+</body>
+</html>
