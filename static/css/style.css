@@ -1,9 +1,55 @@
 body {
     background-color: #000;
     overflow: hidden;
+    color: #fff; /* Default text color */
 }
 
 .container {
     display: flex;
+    font-family: Arial, sans-serif; /* Choose your preferred font */
+    padding: 10px;
 }
-/* Add your global styles here */
+
+.sidebar {
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    margin-right: 10px;
+}
+
+.grid-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column-reverse; /* Start painting from the bottom */
+    overflow-y: scroll; /* Enable vertical scrolling */
+    width: 250px; /* Fixed width of 5 cells (5 * 50px) */
+    border: 1px solid #ccc;
+    background-color: #fff; /* Grid background color */
+}
+
+.cell {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #ccc; /* Gray grid lines */
+    float: left;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* Additional styles for cell types */
+.cell.tnt {
+    background-image: url('/static/images/TNT-Blocks.png');
+}
+
+.cell.spike {
+    background-image: url('/static/images/Spike_Block.png');
+}
+
+.cell.unbreakable {
+    background-image: url('/static/images/Unbreakable-Blocks.png');
+}
+
+.cell.enemy {
+    background-image: url('/static/images/cell.png'); /* Use cell.png for enemy */
+}
