@@ -1,14 +1,37 @@
-{{ include "header.html" }}
+<!DOCTYPE html>
+<html>
 
-<link rel="stylesheet" href="/static/css/styles.css">
-<link rel="stylesheet" href="/static/css/grid.css">
+<head>
+    <title>Infinite Grid</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/grid.css">
+</head>
 
-<div class="container">
-    {{ include "sidebar.html" }}
-    {{ include "grid.html" }}
-</div>
+<body>
+    <div class="container">
+        <link rel="import" href="/static/templates/header.html">
+        <div class="sidebar">
+            <h2>Paint Options</h2>
+            <label for="cellType">Choose Cell Type:</label>
+            <select id="cellType">
+                <option value="enemy">Enemy</option>
+                <option value="tnt">TNT</option>
+                <option value="spike">Spike</option>
+                <option value="unbreakable">Unbreakable</option>
+                <!-- Add more options as needed -->
+            </select>
+            <br>
+            <p>Shift – remove</p>
+            <button id="exportButton">Export as PNG</button>
+        </div>
+        <div class="grid-container" id="gridContainer">
+            <!-- The grid will be generated dynamically here using JavaScript -->
+        </div>
+        <link rel="import" href="/static/templates/footer.html">
+    </div>
 
-<script src="/static/js/main.js"></script>
-<script src="/static/js/grid.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/grid.js"></script>
+</body>
 
-{{ include "footer.html" }}
+</html>
