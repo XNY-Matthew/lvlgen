@@ -12,9 +12,9 @@ func main() {
 
 	// Serve your HTML templates and handle routes
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Requested URL:", r.URL.Path)
 		http.ServeFile(w, r, "static/templates/index.html") // Adjust the path here
 	})
-
 	// Start the server on port 8080
 	log.Println("Server is running on :8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
